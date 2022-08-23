@@ -26,9 +26,9 @@ public class MqttConfiguration {
         DefaultMqttPahoClientFactory factory = new DefaultMqttPahoClientFactory();
         MqttConnectOptions options = new MqttConnectOptions();
 
-        options.setServerURIs(new String[] {"tcp://localhost:1883"});
-        options.setUserName("admin");
-        options.setPassword("".toCharArray());
+        options.setServerURIs(new String[] {"ssl://dropstat-cgvibz6nuikq.cedalo.cloud:8883"});
+        options.setUserName("dropstat");
+        options.setPassword("Dropstat@2022".toCharArray());
         options.setCleanSession(true);
 
         factory.setConnectionOptions(options);
@@ -45,8 +45,8 @@ public class MqttConfiguration {
     @Bean
     public MessageProducer inbound() {
         MqttPahoMessageDrivenChannelAdapter adapter =
-                new MqttPahoMessageDrivenChannelAdapter("serverIn", mqttPahoClientFactory(), "#");
-        adapter.setCompletionTimeout(5000);
+                new MqttPahoMessageDrivenChannelAdapter("dropstat", mqttPahoClientFactory(), "chat-inder");
+        adapter.setCompletionTimeout(50000);
         adapter.setConverter(new DefaultPahoMessageConverter());
         adapter.setQos(2);
         adapter.setOutputChannel(mqttInputChannel());
@@ -60,9 +60,7 @@ public class MqttConfiguration {
         return message -> {
             String topic = Objects.requireNonNull(message.getHeaders().get(MqttHeaders.RECEIVED_TOPIC)).toString();
 
-            if (topic.equals("topic")){
-                System.out.println("this is a topic");
-            }
+            System.out.println(topic);
             System.out.println(message.getPayload());
             System.out.println(message.getHeaders().get("mqtt_receivedTopic"));
         };
@@ -79,12 +77,12 @@ public class MqttConfiguration {
     @Bean
     @ServiceActivator(inputChannel = "mqttOutboundChannel")
     public MessageHandler mqttOutbound(){
-        MqttPahoMessageHandler mqttPahoMessageHandler = new MqttPahoMessageHandler("serverOut", mqttPahoClientFactory());
+        MqttPahoMessageHandler mqttPahoMessageHandler = new MqttPahoMessageHandler("dropstat", mqttPahoClientFactory());
 
         // for always listening
         mqttPahoMessageHandler.setAsync(true);
 
-        mqttPahoMessageHandler.setDefaultTopic("#");
+        mqttPahoMessageHandler.setDefaultTopic("chat-inder");
         mqttPahoMessageHandler.setDefaultRetained(false);
         return mqttPahoMessageHandler;
     }

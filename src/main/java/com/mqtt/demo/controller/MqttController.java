@@ -1,13 +1,14 @@
 package com.mqtt.demo.controller;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.mqtt.demo.MqttGateway;
+import com.mqtt.demo.vo.MessageRequestVO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
 
 @RestController
 public class MqttController {
@@ -16,14 +17,13 @@ public class MqttController {
     MqttGateway mqttGateway;
 
     @PostMapping("/chat")
-    public ResponseEntity<?> publish(@RequestBody String mqttMessage){
+    public ResponseEntity<?> publish(@RequestBody MessageRequestVO message){
         try{
-            JsonObject jsonObject = new Gson().fromJson(mqttMessage, JsonObject.class);
-            mqttGateway.send(jsonObject.get("message").toString(), jsonObject.get("topic").toString());
-            return ResponseEntity.ok("success");
+            mqttGateway.send(message.getTopic(), message.getMessage());
         }catch (Exception e){
             e.printStackTrace();
-            return ResponseEntity.ok("fail");
+            return new ResponseEntity<>("message fail to send", HttpStatus.REQUEST_TIMEOUT);
         }
+        return new  ResponseEntity<>("message sent", HttpStatus.OK);
     }
 }
