@@ -20,15 +20,28 @@ import java.util.Objects;
 @Configuration
 public class MqttConfiguration {
 
+    @Value("${url}")
+    private String url;
+
+    @Value("${username}")
+    private String username;
+
+
+    @Value("${password}")
+    private String password; 
+
+    private static final String dropstat;
+    private static final String topic;
+
     // logic for subscribing
     @Bean
     public MqttPahoClientFactory mqttPahoClientFactory() {
         DefaultMqttPahoClientFactory factory = new DefaultMqttPahoClientFactory();
         MqttConnectOptions options = new MqttConnectOptions();
 
-        options.setServerURIs(new String[] {"ssl://dropstat-cgvibz6nuikq.cedalo.cloud:8883"});
-        options.setUserName("dropstat");
-        options.setPassword("Dropstat@2022".toCharArray());
+        options.setServerURIs(new String[] {url});
+        options.setUserName(username);
+        options.setPassword(password.toCharArray());
         options.setCleanSession(true);
 
         factory.setConnectionOptions(options);
@@ -45,7 +58,7 @@ public class MqttConfiguration {
     @Bean
     public MessageProducer inbound() {
         MqttPahoMessageDrivenChannelAdapter adapter =
-                new MqttPahoMessageDrivenChannelAdapter("dropstat", mqttPahoClientFactory(), "chat-inder");
+                new MqttPahoMessageDrivenChannelAdapter(dropstat, mqttPahoClientFactory(), topic);
         adapter.setCompletionTimeout(50000);
         adapter.setConverter(new DefaultPahoMessageConverter());
         adapter.setQos(2);
